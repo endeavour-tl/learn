@@ -1,4 +1,6 @@
 #include"Command.h"
+#include "sys.h"
+#include "structure.h"
 
 Command::Command(std::vector<std::string> divisionCommandVector):divisionCommandVector(divisionCommandVector) {
 	commandOperator.insert(std::pair<std::string, int>("-l", 1));
@@ -11,6 +13,8 @@ Command::Command(std::vector<std::string> divisionCommandVector):divisionCommand
 	commandOperator.insert(std::pair<std::string, int>("--recurse", 4));
 	commandOperator.insert(std::pair<std::string, int>("-f", 5));
 	commandOperator.insert(std::pair<std::string, int>("-force", 5));
+	commandOperator.insert(std::pair<std::string, int>("-e", 6));
+	commandOperator.insert(std::pair<std::string, int>("--exit", 6));
 	Obtain_instruction();
 }
 
@@ -25,8 +29,15 @@ void Command::Obtain_instruction() {
 void Command::cd() {
 	if (copyInputAbsoluteAddress.size() == 1 && copyInputAbsoluteAddress[0].second == 2) {
 		std::cout << copyInputAbsoluteAddress[0].first << "  " << copyInputAbsoluteAddress[0].second << std::endl;
-		//TODO:void command::cd(string dir);
+		if (copyInputAbsoluteAddress[0].first == "") {
+			//std::cout << "1" << copyInputAbsoluteAddress[0].first << "1" << "  " << copyInputAbsoluteAddress[0].second << std::endl;
+			copyInputAbsoluteAddress[0].first = "..";   //
+		}
 		std::cout << "void command::cd(string dir);" << std::endl;
+        if (strcmp(copyInputAbsoluteAddress[0].first.c_str(), "/") == 0) {
+            root();
+        }
+        ParsePath(copyInputAbsoluteAddress[0].first.substr(1));
 	}
 	else {
 		std::cout << "Directory entry error!" << std::endl;
@@ -58,6 +69,7 @@ void Command::ls() {
 	}
 	if (Obtain_instructionDivisionCommandVector.empty()) {
 		std::cout << "ls no - operation, the default parameter is invoked!" << std::endl;
+        dir();
 		return;
 	}
 	if (commandNumber.size() == 2) {
@@ -77,10 +89,10 @@ void Command::ls() {
 		std::cout << "The parameter of ls - is incorrect!" << std::endl;
 	}
 	if (copyInputAbsoluteAddress.size() == 1 && copyInputAbsoluteAddress[0].second == 2) {
-		std::cout << copyInputAbsoluteAddress[0].first << " " << copyInputAbsoluteAddress[0].second << std::endl;
-		//TODO:void command::ls(string dir, bool l, bool a);
+		// std::cout << copyInputAbsoluteAddress[0].first << " " << copyInputAbsoluteAddress[0].second << std::endl;
 		std::cout << "void command::ls(string dir, bool l, bool a);" << std::endl;
-	}
+        dir();
+    }
 	else {
 		std::cout<<"Directory entry error" << std::endl;
 		return;
@@ -90,8 +102,8 @@ void Command::ls() {
 void Command::mkdir() {
 	bool parent_option = false;
 	std::vector<int> commandNumber;
-	for (int i = 0; i < Obtain_instructionDivisionCommandVector.size(); i++) {
-		auto it = commandOperator.find(Obtain_instructionDivisionCommandVector[i]);
+	for (const auto & i : Obtain_instructionDivisionCommandVector) {
+		auto it = commandOperator.find(i);
 		if (it == commandOperator.end()) {
 			std::cout << "mkdir directive: argument call error!" << std::endl;
 			return;
@@ -110,6 +122,7 @@ void Command::mkdir() {
 
 	if (Obtain_instructionDivisionCommandVector.empty()) {
 		std::cout << "mkdir no - operation, call the default parameter!" << std::endl;
+        smkdir(this->divisionCommandVector[1]);
 		return;
 	}
 	if (commandNumber.size() >= 2) {
@@ -129,7 +142,7 @@ void Command::echo() {
 }
 
 void Command::cat() {
-	if (Obtain_instructionDivisionCommandVector.size() != 0) {
+	if (!Obtain_instructionDivisionCommandVector.empty()) {
 		std::cout << "cat has no '-' instruction" << std::endl;
 		return;
 	}
@@ -137,6 +150,20 @@ void Command::cat() {
 		std::cout << copyInputAbsoluteAddress[0].first << " " << copyInputAbsoluteAddress[0].second << std::endl;
 		//TODO:void cat (string file);
 		std::cout << "void cat (string file);" << std::endl;
+        std::string fn, path;
+        auto f = copyInputAbsoluteAddress[0].first;
+        for (int i=int(f.size()); i>0; i--) {
+                if (f[i] == '/') {
+                    fn = f.substr(i+1);
+                    path = f.substr(1, i-1);
+                    std::cout << fn <<  " " << path << std::endl;
+                    break;
+                }
+            }
+        if(IsFileInCurrentDirectory(fn)==-1) rtdir(path);
+        open(fn);
+        read(fn);
+        close(fn);
 	}
 	else {
 		std::cout << "The file address is incorrect!" << std::endl;
@@ -146,7 +173,7 @@ void Command::cat() {
 void Command::cp() {
 	std::vector<std::string> files;
 	std::string dir;
-	if (Obtain_instructionDivisionCommandVector.size() != 0) {
+	if (!Obtain_instructionDivisionCommandVector.empty()) {
 		std::cout << "cp has no '-' instruction!" << std::endl;
 		return;
 	}
@@ -169,33 +196,61 @@ void Command::cp() {
 			return;
 		}
 	}
-	if (files.size() == 0) {
+	if (files.empty()) {
 		std::cout << "cp The file name is not entered. Please re-enter it!" << std::endl;
 		return;
 	}
 	else {
-		//TODO:void cp(vector<string> files, string dir);
+		// TODO:void cp(vector<string> files, string dir);
+        std::cout << dir << std::endl;
+        for (auto& f: files) {
+            string fn;
+            for (int i = int(f.length()); i>0; i--) {
+                if (f[i] == '/') {
+                    fn = f.substr(i+1);
+                    break;
+                }
+            }
+            copy(fn, dir.substr(1));
+        }
 		std::cout << "void cp(vector<string> files, string dir);" << std::endl;
 	}
 }
 
 void Command::touch() {
 	std::vector<std::string> files;
-	if (Obtain_instructionDivisionCommandVector.size() != 0) {
+	if (!Obtain_instructionDivisionCommandVector.empty()) {
 		std::cout << "touch has no '-' command!" << std::endl;
 		return;
 	}
-	for (int i = 0; i < copyInputAbsoluteAddress.size(); i++) {
-		if (copyInputAbsoluteAddress[i].second == 1) {
-			files.push_back(copyInputAbsoluteAddress[i].first);
+	for (auto & copyInputAbsoluteAddres : copyInputAbsoluteAddress) {
+		if (copyInputAbsoluteAddres.second == 1) {
+			files.push_back(copyInputAbsoluteAddres.first);
 		}
 		else {
 			std::cout << "File name error!" << std::endl;
 			return;
 		}
 	}
-	if (files.size() != 0) {
-		//TODO:void touch(vector<string> files);
+	if (!files.empty()) {
+//		TODO:void touch(vector<string> files);
+        for(auto &&f: files) {
+            std::string fn, path;
+            for (int i=int(f.size()); i>0; i--) {
+                if (f[i] == '/') {
+                    fn = f.substr(i+1);
+                    path = f.substr(1, i-1);
+                    // std::cout << fn <<  " " << path << std::endl;
+                    break;
+                }
+            }
+            rtdir(path);
+            create(fn);
+            open(fn);
+            write(fn, "123123123123123");
+            close(fn);
+        }
+//        create();
 		std::cout << "void touch(vector<string> files);" << std::endl;
 	}
 	else {
@@ -248,10 +303,10 @@ void Command::rm() {
 	}
 	if (copyInputAbsoluteAddress.size() == 1) {
 		if (copyInputAbsoluteAddress[0].second == 1) {
-			file_or_dir = false; //ÊÇÎÄ¼ş
+			file_or_dir = false; //æ˜¯æ–‡ä»¶
 		}
 		else {
-			file_or_dir = true; //ÊÇÄ¿Â¼
+			file_or_dir = true; //æ˜¯ç›®å½•
 		}
 	}
 	else {
@@ -264,7 +319,7 @@ void Command::rm() {
 
 void Command::rmdir() {
 	std::vector<std::string> dirs;
-	if (Obtain_instructionDivisionCommandVector.size() != 0) {
+	if (!Obtain_instructionDivisionCommandVector.empty()) {
 		std::cout << "rmdir no '-' instruction!" << std::endl;
 		return;
 	}
@@ -277,7 +332,7 @@ void Command::rmdir() {
 			return;
 		}
 	}
-	if (dirs.size() == 0) {
+	if (dirs.empty()) {
 		std::cout << "The directory cannot be empty!" << std::endl;
 		return;
 	}
@@ -286,12 +341,12 @@ void Command::rmdir() {
 }
 
 void Command::who() {
-	std::cout << "who" << std::endl;
+	std::cout << info(current_user.name) << std::endl;
 }
 
 void Command::rname() {
 	std::string target_file, new_filename;
-	if (Obtain_instructionDivisionCommandVector.size() != 0) {
+	if (!Obtain_instructionDivisionCommandVector.empty()) {
 		std::cout << "rname No '-' instruction!" << std::endl;
 		return;
 	}
@@ -339,19 +394,43 @@ void Command::exit() {
 	std::cout << "exit" << std::endl;
 }
 
+void Command::logout() {
+	
+	//std::cout << divisionCommandVector.size() << std::endl;
+	switch (divisionCommandVector.size()){
+	case 1: {
+		//TODO logout æ— -e
+		std::cout << "logout" << std::endl;
+		break;
+	}
+	case 2: {
+		auto it = commandOperator.find(divisionCommandVector[1]);
+		if (it->second==6) {
+			//TODO logout æœ‰-e
+			std::cout << "logout" << "-e" << std::endl;
+			break;
+		}
+		else {
+			std::cout << "parameter usage error!" << std::endl;
+		}
+	}
+	default:std::cout << "The number of parameters is incorrect" << std::endl; return;
+	}
+}
+
 int Command::judge_path(std::string path) {
-	std::string file_path = "(\\.{0,2}/([\\w\\s\\.\\-\\:\'\"()+*=;,]+/)*)?[\\w\\.\\-\\:\'\"()+*=;,]+\\.[\\w]+";
-	std::string directory_path = "\\.{0,2}(/[\\w\\s\\.\\-\\:\'\"()+*=;,]+)+/?|\\.{1,2}/?";
+	std::string file_path = R"((\.{0,2}/([\w\s\.\-\:'"()+*=;,]+/)*)?[\w\.\-\:'"()+*=;,]+\.[\w]+)";
+	std::string directory_path = R"(\.{0,2}(/[\w\s\.\-\:'"()+*=;,]+)+/?|\.{1,2}/?)";
 	regex file_path_regex(file_path);
 	regex dir_path_regex(directory_path);
-	if (regex_match(path, file_path_regex))return 1; //Âú×ãÎÄ¼şÃû±ê×¼Ôò·µ»Ø1
-	else if (regex_match(path, dir_path_regex))return 2;  //Âú×ãÄ¿Â¼Ãû±ê×¼·µ»Ø2
-	else return 0;  //·ñÔò·µ»Ø0
+	if (regex_match(path, file_path_regex))return 1; //æ»¡è¶³æ–‡ä»¶åæ ‡å‡†åˆ™è¿”å›1
+	else if (regex_match(path, dir_path_regex))return 2;  //æ»¡è¶³ç›®å½•åæ ‡å‡†è¿”å›2
+	else return 0;  //å¦åˆ™è¿”å›0
 }
 
 std::vector<std::pair<std::string,int>>Command::getFileOrCatalogue() {
 	std::vector<std::pair<std::string,int>> retVecter;
-	bool first = false;   //firstÓÃÓÚÖ¸ÏòÎÄ¼ş»òÕßÄ¿Â¼¿ªÊ¼
+	bool first = false;   //firstç”¨äºæŒ‡å‘æ–‡ä»¶æˆ–è€…ç›®å½•å¼€å§‹
 	for (int i = 0; i < divisionCommandVector.size(); i++) {
 		if (judge_path(divisionCommandVector[i]) == 1) {
 			retVecter.push_back(std::pair<std::string, int>(divisionCommandVector[i], 1));
@@ -366,11 +445,11 @@ std::vector<std::pair<std::string,int>>Command::getFileOrCatalogue() {
 				std::cout << "Disable invalid values after file/directory names" << std::endl;
 				retVecter.clear();
 				retVecter.push_back(std::pair<std::string, int>("error", 0)); 
-				return retVecter;					//·µ»ØÒ»¸öerror£¬ÈÃÆäÅĞ¶Ï£¬²¢ÖØĞÂÊäÈë
+				return retVecter;					//è¿”å›ä¸€ä¸ªerrorï¼Œè®©å…¶åˆ¤æ–­ï¼Œå¹¶é‡æ–°è¾“å…¥
 			}
 		}
 	}
-	return retVecter;			//Î¨Ò»·µ»ØÕıÈ·ÖµµÄµØ·½
+	return retVecter;			//å”¯ä¸€è¿”å›æ­£ç¡®å€¼çš„åœ°æ–¹
 }
 
 void Command::copyAbsoluteAddress(std::vector <std::pair<std::string,int>> tempVector) {

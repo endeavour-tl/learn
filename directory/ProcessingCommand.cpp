@@ -40,6 +40,7 @@ std::map<std::string, int> ProcessingCommand::_init_() {
 	firstCommand[std::string("who")] = 9;
 	firstCommand[std::string("rname")] = 10;
 	firstCommand[std::string("exit")] = 11;
+	firstCommand[std::string("logout")] = 12;
 	return firstCommand;
 }
 
@@ -131,8 +132,10 @@ void ProcessingCommand::manageCommand(std::string command, Command tempCommand) 
 			tempCommand.rname(); break;
 		case 11:
 			tempCommand.exit(); break;
+		case 12:
+			tempCommand.logout(); break;
 			/*default:
-				std::cout << "ÊäÈë´íÎóÇëÖØĞÂÊäÈë" << std::endl;
+				std::cout << "è¾“å…¥é”™è¯¯è¯·é‡æ–°è¾“å…¥" << std::endl;
 				break;*/
 		}
 	}
@@ -140,30 +143,30 @@ void ProcessingCommand::manageCommand(std::string command, Command tempCommand) 
 }
 
 void ProcessingCommand::run() {
-	std::string current_dir = "/home/a789we=-+4/456sfds";
+	std::string current_dir = "/root";
 	while (true) {
 		std::cout << current_dir;
-		std::string str = getInputCommand();  //»ñµÃÊäÈëÃüÁî
+		std::string str = getInputCommand();  //è·å¾—è¾“å…¥å‘½ä»¤
 		//std::cout << str << std::endl;
-		std::vector<std::string> vet = divisionCommand(str);  //½«ÊäÈëÃüÁî½øĞĞ·Ö¸î
-		Command command(vet);				//½«command½øĞĞ³õÊ¼»¯£¬²¢´«Èë·Ö¸îºóµÄÃüÁî
-		Catalogue catalogue(current_dir);   //½«catalogue½øĞĞ³õÊ¼»¯£¬²¢´«Èëµ±Ç°Ä¿Â¼
-		std::vector<std::pair<std::string, int>> pathOrCatalogue = command.getFileOrCatalogue();   //µ÷ÓÃcommandµÄº¯Êı£¬·µ»ØÊäÈëĞÎÊ½µÄÎÄ¼şÃû»òÕßÄ¿Â¼Ãû
-		if (pathOrCatalogue.size() == 1 && pathOrCatalogue[0].first == "error" && pathOrCatalogue[0].second == 0) {			   //ÅĞ¶ÏÎÄ¼şÃûºÍÄ¿Â¼ÃûÖ®¼äÊÇ·ñÓĞÆäËûÎŞĞ§²ÎÊı£¬ÓĞ¾ÍÖØĞÂÊäÈë
+		std::vector<std::string> vet = divisionCommand(str);  //å°†è¾“å…¥å‘½ä»¤è¿›è¡Œåˆ†å‰²
+		Command command(vet);				//å°†commandè¿›è¡Œåˆå§‹åŒ–ï¼Œå¹¶ä¼ å…¥åˆ†å‰²åçš„å‘½ä»¤
+		Catalogue catalogue(current_dir);   //å°†catalogueè¿›è¡Œåˆå§‹åŒ–ï¼Œå¹¶ä¼ å…¥å½“å‰ç›®å½•
+		std::vector<std::pair<std::string, int>> pathOrCatalogue = command.getFileOrCatalogue();   //è°ƒç”¨commandçš„å‡½æ•°ï¼Œè¿”å›è¾“å…¥å½¢å¼çš„æ–‡ä»¶åæˆ–è€…ç›®å½•å
+		if (pathOrCatalogue.size() == 1 && pathOrCatalogue[0].first == "error" && pathOrCatalogue[0].second == 0) {			   //åˆ¤æ–­æ–‡ä»¶åå’Œç›®å½•åä¹‹é—´æ˜¯å¦æœ‰å…¶ä»–æ— æ•ˆå‚æ•°ï¼Œæœ‰å°±é‡æ–°è¾“å…¥
 			continue;
 		}
 		/*std::cout << "1" << std::endl;*/
-		std::vector<std::pair<std::string, int>> inputAbsoluteAddress;					//´æ´¢ÎÄ¼ş»òÕßÄ¿Â¼µÄ¾ø¶ÔÂ·¾¢£¬int 1±íÊ¾ÎÄ¼ş£¬2±íÊ¾Â·¾¶			
+		std::vector<std::pair<std::string, int>> inputAbsoluteAddress;					//å­˜å‚¨æ–‡ä»¶æˆ–è€…ç›®å½•çš„ç»å¯¹è·¯åŠ²ï¼Œint 1è¡¨ç¤ºæ–‡ä»¶ï¼Œ2è¡¨ç¤ºè·¯å¾„			
 		for (int i = 0; i < pathOrCatalogue.size(); i++) {
 			//std::cout << pathOrCatalogue[i].first << "  " << pathOrCatalogue[i].second << std::endl;
-			//std::cout << catalogue.getFileAddress(pathOrCatalogue[i].first) << std::endl;			//µ÷ÓÃcatalogueµÄgetFileAddressº¯Êı£¬·µ»ØÎÄ¼ş»òÕßÄ¿Â¼µÄ¾ø¶ÔµØÖ·
+			//std::cout << catalogue.getFileAddress(pathOrCatalogue[i].first) << std::endl;			//è°ƒç”¨catalogueçš„getFileAddresså‡½æ•°ï¼Œè¿”å›æ–‡ä»¶æˆ–è€…ç›®å½•çš„ç»å¯¹åœ°å€
 			/*std::cout << "1" << std::endl;*/
-			inputAbsoluteAddress.push_back(std::pair<std::string, int>(catalogue.getFileAddress(pathOrCatalogue[i].first), pathOrCatalogue[i].second)); //²åÈëÎÄ¼ş»òÕßÄ¿Â¼µÄ¾ø¶ÔÂ·¾¢£¬int 1±íÊ¾ÎÄ¼ş£¬2±íÊ¾Â·¾¶
+			inputAbsoluteAddress.push_back(std::pair<std::string, int>(catalogue.getFileAddress(pathOrCatalogue[i].first), pathOrCatalogue[i].second)); //æ’å…¥æ–‡ä»¶æˆ–è€…ç›®å½•çš„ç»å¯¹è·¯åŠ²ï¼Œint 1è¡¨ç¤ºæ–‡ä»¶ï¼Œ2è¡¨ç¤ºè·¯å¾„
 			/*std::cout << "2" << std::endl;
 			std::cout << catalogue.getFileAddress(pathOrCatalogue[i].first) << std::endl;*/
 		}
-		command.copyAbsoluteAddress(inputAbsoluteAddress);     //½«µÃµ½µÄÎÄ¼ş»òÕßÄ¿Â¼µÄ¾ø¶ÔÂ·¾¶½øĞĞ¿½±´£¬Ê¹commandÀàµÄº¯ÊıÄÜ·ÃÎÊµ½ÊäÈëµÄ¾ø¶ÔÂ·¾¶
+		command.copyAbsoluteAddress(inputAbsoluteAddress);     //å°†å¾—åˆ°çš„æ–‡ä»¶æˆ–è€…ç›®å½•çš„ç»å¯¹è·¯å¾„è¿›è¡Œæ‹·è´ï¼Œä½¿commandç±»çš„å‡½æ•°èƒ½è®¿é—®åˆ°è¾“å…¥çš„ç»å¯¹è·¯å¾„
 		/*std::cout << "4" << std::endl;*/
-		manageCommand(str, command);           //Ö´ĞĞÊäÈëµÄµÚÒ»¸ö²ÎÊıÃüÁî
+		manageCommand(str, command);           //æ‰§è¡Œè¾“å…¥çš„ç¬¬ä¸€ä¸ªå‚æ•°å‘½ä»¤
 	}
 }

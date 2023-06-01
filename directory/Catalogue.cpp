@@ -5,7 +5,7 @@ std::string Catalogue::getFileAddress(std::string TempFileCatalogue) {
 	int pointCount = 0;
 	for (int i = 0; i < TempFileCatalogue.size(); i++) {
 		if (TempFileCatalogue[0] != '.' && TempFileCatalogue[0] != '/') {
-			retFileCatalogue = currentPath + TempFileCatalogue;
+			retFileCatalogue = currentPath + '/' +TempFileCatalogue;
 			return retFileCatalogue;
 		}
 		switch (TempFileCatalogue[i])
@@ -19,7 +19,7 @@ std::string Catalogue::getFileAddress(std::string TempFileCatalogue) {
 				retFileCatalogue = currentPath + TempFileCatalogue.substr(1,TempFileCatalogue.size()-1);
 				return  retFileCatalogue;
 			}
-			else {                //ÓÐÁ½¸öµãµÄ
+			else {                //æœ‰ä¸¤ä¸ªç‚¹çš„
 				int found = currentPath.find_last_of('/');
 				if (found == currentPath.npos) {
 					retFileCatalogue = currentPath + TempFileCatalogue.substr(2, TempFileCatalogue.size() - 2);

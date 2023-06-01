@@ -24,6 +24,7 @@ public:
 	void who();
 	void rname();
 	void exit();
+	void logout();
 	int judge_path(std::string path);
 	void copyAbsoluteAddress(std::vector <std::pair<std::string ,int>> tempVector);
 	std::vector<std::pair<std::string,int>> getFileOrCatalogue();

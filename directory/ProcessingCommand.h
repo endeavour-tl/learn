@@ -11,7 +11,7 @@
 
 class ProcessingCommand {
 public:
-	void run();
+    void run();
 private:
 	std::map<std::string, int> _init_();
 	std::string separationCommand(std::string command);
